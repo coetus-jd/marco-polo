@@ -4,5 +4,17 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {},
+	"extensions": {
+		"recommendations": [
+			"xaver.clang-format",
+			"twxs.cmake",
+			"ms-vscode.cpptools",
+			"vsciot-vscode.vscode-arduino",
+			"WakaTime.vscode-wakatime",
+			"EditorConfig.EditorConfig",
+			"usernamehw.errorlens",
+			"miguelsolorio.fluent-icons",
+		]
+	}
 }
