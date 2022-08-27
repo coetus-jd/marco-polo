@@ -34,3 +34,8 @@ This project contains some projects and activities from the Console Games discip
 
 ## :page_with_curl:	License
 This project is under the GPL-3.0 license. Take a look at the [LICENSE](LICENSE) file for more details.
+
+## 📚 Learn more
+  * https://circuitstate.com/tutorials/how-to-use-vs-code-for-creating-and-uploading-arduino-sketches/#Workspace
+  * https://www.arduino.cc/en/software
+  * https://www.npmjs.com/package/clang-format
