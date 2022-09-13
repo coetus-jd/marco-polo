@@ -4,7 +4,11 @@
 			"path": "."
 		}
 	],
-	"settings": {},
+	"settings": {
+		"files.associations": {
+			"tvout.h": "c"
+		}
+	},
 	"extensions": {
 		"recommendations": [
 			"xaver.clang-format",

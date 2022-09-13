@@ -1,7 +1,7 @@
 // Alexandre Souza
 
-#include <TVout.h>
-#include <fontALL.h>
+#include "../Library/arduino-tvout/TVout.h"
+#include "../Library/arduino-tvout/TVoutfonts/fontALL.h"
 
 #define direita 3
 #define esquerda 4
