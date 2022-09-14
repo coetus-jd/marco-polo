@@ -1,0 +1,5 @@
+#define RIGHT_MOVEMENT 2
+#define LEFT_MOVEMENT 3
+#define UP_MOVEMENT 4
+#define DOWN_MOVEMENT 5
+#define SHOOT 6

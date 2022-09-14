@@ -4,11 +4,6 @@
 			"path": "."
 		}
 	],
-	"settings": {
-		"files.associations": {
-			"tvout.h": "c"
-		}
-	},
 	"extensions": {
 		"recommendations": [
 			"xaver.clang-format",
@@ -20,5 +15,11 @@
 			"usernamehw.errorlens",
 			"miguelsolorio.fluent-icons",
 		]
+	},
+	"settings": {
+		"files.associations": {
+			"stdlib.h": "c",
+			"tvout.h": "c"
+		}
 	}
 }

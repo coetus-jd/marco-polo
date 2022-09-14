@@ -1,3 +1,0 @@
-[submodule "Library/arduino-tvout"]
-	path = Library/arduino-tvout
-	url = https://github.com/Avamander/arduino-tvout.git

@@ -1,4 +1,4 @@
 {
     "board": "arduino:avr:uno",
-    "sketch": "Examples\\TestArduino.ino"
+    "sketch": "Game\\Index.ino"
 }
