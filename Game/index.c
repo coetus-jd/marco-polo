@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-// #include "../Library/arduino-tvout/TVout.h"
+#include "../Library/arduino-tvout/TVout.h"
 
 enum State { Working = 1, Failed = 0 };
 
