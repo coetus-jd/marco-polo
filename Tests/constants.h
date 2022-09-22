@@ -2,7 +2,4 @@
 #define LEFT_MOVEMENT 3
 #define UP_MOVEMENT 4
 #define DOWN_MOVEMENT 5
-#define ACTION 6
-
-#define SCREEN_HEIGHT 96
-#define SCREEN_WIDTH 128
+#define SHOOT 6

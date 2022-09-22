@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "author": "Fabrício Pinto Ferreira",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "wokwi-arduino-nano", "id": "uno", "top": 434.25, "left": 10.4, "attrs": {} },
+    { "type": "wokwi-tv", "id": "tv1", "top": -340.21, "left": -306.48, "attrs": {} },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn1",
+      "top": 355.7,
+      "left": 215.73,
+      "attrs": { "color": "red", "bounce": "1" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn2",
+      "top": 353.32,
+      "left": 314.17,
+      "attrs": { "color": "blue", "bounce": "1" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn3",
+      "top": 353.27,
+      "left": 404.27,
+      "attrs": { "color": "yellow", "bounce": "1" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn4",
+      "top": 355.8,
+      "left": 487.6,
+      "attrs": { "color": "green", "bounce": "1" }
+    },
+    {
+      "type": "wokwi-pushbutton",
+      "id": "btn5",
+      "top": 355.8,
+      "left": 576.31,
+      "attrs": { "color": "white", "bounce": "1" }
+    }
+  ],
+  "connections": [
+    [ "uno:9", "tv1:SYNC", "green", [ "v0" ] ],
+    [ "uno:7", "tv1:IN", "cyan", [ "v0" ] ],
+    [ "btn1:1.l", "uno:6", "red", [ "h0" ] ],
+    [ "btn1:2.r", "uno:GND.2", "black", [ "h14.89", "v180.96", "h-114.58" ] ],
+    [ "btn2:1.l", "uno:5", "blue", [ "h-11.24", "v44.16", "h-88.27" ] ],
+    [ "btn2:2.r", "uno:GND.3", "black", [ "h0.48", "v182.14", "h-198.82" ] ],
+    [ "btn3:1.l", "uno:4", "yellow", [ "h-12.74", "v54.99", "h-165.74" ] ],
+    [ "btn3:2.r", "uno:GND.2", "black", [ "h-7.44", "v184.62", "h-279.57" ] ],
+    [ "btn4:1.l", "uno:3", "green", [ "h-11.68", "v57.14", "h-240.53" ] ],
+    [ "btn4:2.r", "uno:GND.3", "black", [ "h-6.84", "v179.78", "h-357.97" ] ],
+    [ "btn5:1.l", "uno:2", "white", [ "h-17.45", "v62.88", "h-312.67" ] ],
+    [ "btn5:2.r", "uno:GND.2", "green", [ "h-2.29", "v182.44", "h-458.35", "v4.44" ] ]
+  ]
+}

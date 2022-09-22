@@ -6,7 +6,7 @@ enum State { Working = 1, Failed = 0 };
 struct Image
 {
   char Source[10];
-};
+} Image;
 
 
 int main() {
