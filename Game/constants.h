@@ -5,4 +5,4 @@
 #define ACTION 6
 
 #define SCREEN_HEIGHT 96
-#define SCREEN_WIDTH 128
+#define SCREEN_WIDTH 120
