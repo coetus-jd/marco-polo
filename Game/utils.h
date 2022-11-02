@@ -19,9 +19,9 @@ void show_text(TVout& tv, uint8_t x, uint8_t y, String text, unsigned char type[
   tv.print(x, y, temp);
 }
 
-int text_size(String text, int maxWidth) {
+int text_size(String text, int maxWidth, int multiplier = 4) {
   int text_lenght = text.length();
-  int center_point = (maxWidth - text_lenght * 4) / 2;
+  int center_point = (maxWidth - text_lenght * multiplier) / 2;
 
   return center_point;
 }
