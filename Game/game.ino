@@ -5,9 +5,12 @@
 #include "logo.h"
 #include "room_image.h"
 
-using namespace std;
+// using namespace std;
 
 TVout tv;
+
+// Game
+int current_game_state = IN_START_SCREEN;
 
 int eyeX = 0;
 int eyeY = 0;
@@ -24,20 +27,23 @@ int timer = 120;
 int milliSeconds = 0;
 
 // Positions
-int possible_positions[5][2] = {
-  // X   Y
-  { 15, 15 },
-  { 50, 75 },
-  { 20, 60 },
-  { 60, 80 },
-  { 15, 80 },
+int possible_positions[5][4] = {
+  // Is enabled?   X   Y   Id
+  { ENEMY_ENABLED, 15, 15, 01 },
+  { ENEMY_ENABLED, 75, 60, 02 },
+  { ENEMY_ENABLED, 20, 60, 03 },
+  { ENEMY_ENABLED, 80, 80, 04 },
+  { ENEMY_ENABLED, 15, 80, 05 },
 };
 
 int ALL_CONTROLS[5] = { RIGHT_MOVEMENT, LEFT_MOVEMENT, UP_MOVEMENT, DOWN_MOVEMENT, ACTION };
 
 String title = "Pique esconde";
 
+// Collision controls
 bool colliding = false;
+int enemy_id_collided = 0;
+int enemies_found = 0;
 
 void setup() {
   configure_buttons();
@@ -52,50 +58,32 @@ void setup() {
   start_screen();
 }
 
+// OBS: don't use Serial.print inside a loop, for some reason its breaks
 void loop() {
   tv.delay_frame(1);
   tv.clear_screen();
 
+  if (current_game_state == WIN)
+  {
+    win_screen();
+    return;
+  }
+
+  if (current_game_state == LOST)
+  {
+    game_over_screen();
+    return;
+  }
+
   tv.draw_rect(0, 0, maxWidth, maxHeight, WHITE);
-  
+
   show_debug_info();
   draw_all_enemies();
   draw_eyes();
-  // collision_confirm(enemyX, enemyY, ENEMY_WIDTH, ENEMY_HEIGHT);
+  verify_if_has_collided_with_enemy();
   activate_marco_polo();
 
-  time();
-}
-
-void start_screen() {
-  bool pressed = false;
-  int center_point = 0;
-
-  while (!pressed) {
-    center_point = text_size(title, maxWidth);
-
-    show_text(tv, center_point, maxHeight - 10, title, font4x6);
-
-    pressed = has_pressed_any_button();
-
-    tv.delay_frame(1);
-    tv.clear_screen();
-  }
-
-  run();
-
-  // tv.bitmap((tv.hres() - pong_logo[0]) / 2 + 11, (tv.vres() - pong_logo[1]) / 2, pong_logo);
-
-  // show_text(tv, SCREEN_WIDTH / 4, SCREEN_HEIGHT - 80, "Game name");
-  // show_text(tv, SCREEN_WIDTH / 3, SCREEN_HEIGHT - 40, "Play");
-  // show_text(tv, 10, SCREEN_HEIGHT - 10, "By Astha", font4x6);
-  // show_text(tv, SCREEN_WIDTH - 50, SCREEN_HEIGHT - 10, "FATEC 2022", font4x6);
-}
-
-void run() {
-  // scenery();
-  // tv.delay_frame(75);
-  // create_enemies();
+  // control_game_time();
 }
 
 void configure_buttons() {
@@ -115,39 +103,107 @@ void configure_screen() {
   maxHeight = tv.vres() - 3;
 }
 
+void configure_debugger() {
+  Serial.begin(9650);
+}
+
+void start_screen() {
+  current_game_state = IN_START_SCREEN;
+
+  bool pressed = false;
+  int center_point = 0;
+
+  has_pressed_any_button();
+
+  do {
+    center_point = x_position_to_center(title, maxWidth);
+
+    show_text(tv, center_point, maxHeight - 10, "Pique esconde", font4x6);
+
+    pressed = has_pressed_any_button();
+
+    tv.delay_frame(1);
+    tv.clear_screen();
+  } while (!pressed);
+
+  current_game_state = PLAYING;
+
+  scenery();
+}
+
+void game_over_screen() {
+  bool pressed = false;
+  int center_point = 0;
+  int center_point_desc = 0;
+
+  do {
+    center_point = x_position_to_center("You lose", maxWidth);
+    show_text(tv, center_point, maxHeight - 55, "You lose");
+
+    pressed = has_pressed_any_button();
+
+    tv.delay_frame(1);
+    tv.clear_screen();
+  } while (!pressed);
+}
+
+void win_screen() {
+  bool pressed = false;
+
+  int win_center_point = 0;
+  int press_center_point = 0;
+  int play_center_point = 0;
+
+  String win_text = "You win!";
+  String press_text = "Press any key";
+  String play_text = "to play again";
+
+  do  {
+    win_center_point = x_position_to_center(win_text, maxWidth);
+    press_center_point = x_position_to_center(press_text, maxWidth);
+    play_center_point = x_position_to_center(play_text, maxWidth);
+
+    show_text(tv, win_center_point, maxHeight - 65, "You win!");
+
+    show_text(tv, press_center_point, maxHeight - 45, "Press any key", font4x6);
+    show_text(tv, play_center_point, maxHeight - 35, "to play again", font4x6);
+
+    pressed = has_pressed_any_button();
+
+    tv.delay_frame(1);
+    tv.clear_screen();
+  } while (!pressed);
+
+  reset_game();
+  scenery();
+}
+
 void activate_marco_polo() {
   // If is showing the indicator and already used all marco polos, we need to await and continue showing
-  // the indicators 
-  if (marco_polo_used == 0 && !showing_marco_polo) {
-    Serial.println("Used all marco polos");
+  // the indicators
+  if (marco_polo_used == 0 && !showing_marco_polo)
     return;
-  }
 
-  if (showing_marco_polo) {
+  if (showing_marco_polo)
     draw_marco_polo_indicators();
-  }
 
-  if (digitalRead(ACTION) == LOW) {
+  if (digitalRead(ACTION) == LOW)
     marco_polo_timer++;
-    Serial.println(marco_polo_timer);
-  }
 
   if (digitalRead(ACTION) == HIGH) {
     reset_marco_polo();
     return;
   }
 
-  // Controls how many the marco polo indicators (?, !) will be displayed
+  // Controls for how long the marco polo indicators (?, !) will be displayed
   if (showing_marco_polo && ((marco_polo_timer - TIME_MARCO_POLO) >= MARCO_POLO_SHOWING_TIME)) {
     // Serial.println("Reset marco polo");
     reset_marco_polo();
     return;
   }
 
-  if (!showing_marco_polo && marco_polo_timer >= TIME_MARCO_POLO) {
-    // Serial.println("Show marco polo");
+  if (!showing_marco_polo && marco_polo_timer >= TIME_MARCO_POLO)
     marco_polo();
-  }
 }
 
 void draw_eyes() {
@@ -201,10 +257,6 @@ void draw_eyes() {
   }
 }
 
-void configure_debugger() {
-  Serial.begin(9650);
-}
-
 void show_debug_info() {
   tv.select_font(font4x6);
 
@@ -212,49 +264,104 @@ void show_debug_info() {
   tv.print(2, 5, eyeX);
   // Show the current Y value of the player
   tv.print(2, 15, eyeY);
+
+  // Show the number of marco polo used
+  tv.print(maxWidth - 10, 5, marco_polo_used);
+
+  // Show the number of marco polo used
+  tv.print(maxWidth - 10, maxHeight - 10, enemies_found);
 }
 
 void draw_all_enemies() {
   for (auto &positions : possible_positions)
   {
-    int x = positions[0];
-    int y = positions[1];
+    int enabled = positions[0];
 
-    draw_enemy(x, y);
+    if (enabled == ENEMY_DISABLED)
+      continue;
 
-    // for (auto &coordinates : positions)
-    // {
-    //   Serial.println(coordinates);
-    // }
+    int x = positions[1];
+    int y = positions[2];
+    int id = positions[3];
+    
+    // In the game the enemies will not be displayed
+    // draw_enemy(x, y);
   }
 }
 
-void draw_enemy(int x, int y) {
-  tv.draw_rect(x, y, ENEMY_WIDTH, ENEMY_HEIGHT, WHITE);
-}
+// void draw_enemy(int x, int y) {
+//   tv.draw_rect(x, y, ENEMY_WIDTH, ENEMY_HEIGHT, WHITE);
+// }
 
 bool has_pressed_any_button() {
   int controls_length = (sizeof(ALL_CONTROLS) / sizeof(ALL_CONTROLS[0]));
+
+  Serial.println(controls_length);
 
   bool pressed = false;
 
   for (int index = 0; index < controls_length; index++) {
     if (digitalRead(ALL_CONTROLS[index]) == LOW) {
+      Serial.println("pressionou!");
       pressed = true;
     }
+
+    Serial.println("não pressionou!");
   }
+
+  Serial.println(pressed);
 
   return pressed;
 }
 
-void collision_confirm(int enemyX, int enemyY, int enemyWidth, int enemyHeight) {
-  // tv.draw_rect(enemyX, enemyY, enemyWidth, enemyHeight, WHITE);
+void verify_if_has_collided_with_enemy() {
+  for (auto &positions : possible_positions)
+  {
+    bool disable = positions[0] == ENEMY_DISABLED;
 
-  colliding = (eyeX + EYE_WIDTH >= enemyX && eyeX <= enemyX + enemyWidth)
-              && (eyeY + EYE_HEIGHT >= enemyY && eyeY <= enemyY + enemyHeight);
+    if (disable) continue;
+
+    int x = positions[1];
+    int y = positions[2];
+    int id = positions[3];
+
+    collision_confirm(x, y, id);
+
+    if (colliding) break;
+  }
+
+  if (!colliding)
+    return;
+
+  if (digitalRead(ACTION) != LOW)
+    return;
+
+  // if (enemy_id_collided <= 0)
+  //   Serial.println("Id invalid!");
+
+  disable_enemy(enemy_id_collided);
+  enemies_found++;
+
+  bool find_all = found_all_enemies();
+
+  if (find_all)
+    current_game_state = WIN;
 }
 
-void time() {
+void collision_confirm(int enemy_x, int enemy_y, int enemy_id) {
+  colliding = (eyeX + EYE_WIDTH >= enemy_x && eyeX <= enemy_x + ENEMY_WIDTH)
+              && (eyeY + EYE_HEIGHT >= enemy_y && eyeY <= enemy_y + ENEMY_HEIGHT);
+
+  if (colliding)
+  {
+    enemy_id_collided = enemy_id;
+    return;
+  }
+
+  enemy_id_collided = 0;
+}
+
+void control_game_time() {
   int seconds = millis() - milliSeconds;
 
   if (seconds >= GAME_DURATION)
@@ -266,27 +373,12 @@ void time() {
     milliSeconds = millis();
   }
 
-  // game_over();
+  // current_game_state = LOST;
 }
 
 void scenery() {
   tv.bitmap((tv.hres() - room_image[0]) - 10, (tv.vres() - room_image[1]) / 2, room_image);
-}
-
-void game_over() {
-  bool pressed = false;
-  int center_point = 0;
-  int center_point_desc = 0;
-
-  while (!pressed) {
-    center_point = text_size("Fim de Jogo", maxWidth, 8);
-    show_text(tv, center_point, maxHeight - 55, "Fim de Jogo");
-
-    pressed = has_pressed_any_button();
-
-    tv.delay_frame(1);
-    tv.clear_screen();
-  }
+  tv.delay_frame(75);
 }
 
 void marco_polo() {
@@ -300,8 +392,12 @@ void draw_marco_polo_indicators() {
 
   for (auto &positions : possible_positions)
   {
-    int x = positions[0];
-    int y = positions[1];
+    bool disable = positions[0] == ENEMY_DISABLED;
+
+    if (disable) continue;
+
+    int x = positions[1];
+    int y = positions[2];
 
     show_text(tv, x, y - 6, "!", font4x6);
   }
@@ -310,4 +406,55 @@ void draw_marco_polo_indicators() {
 void reset_marco_polo() {
   marco_polo_timer = 0;
   showing_marco_polo = false;
+}
+
+void disable_enemy(int enemy_id_to_disable) {
+  for (auto &positions : possible_positions)
+  {
+    int id = positions[3];
+
+    if (id == enemy_id_to_disable)
+    {
+      positions[0] = ENEMY_DISABLED;
+      break;
+    }
+  }
+}
+
+bool found_all_enemies() {
+  int internal_enemies_found_quantity = 0;
+  int quantity_of_enemies = sizeof(possible_positions) / sizeof(possible_positions[0]);
+
+  for (auto &positions : possible_positions)
+  {
+    if (positions[0] == ENEMY_DISABLED)
+      internal_enemies_found_quantity++;
+  }
+
+  bool found_all = internal_enemies_found_quantity == quantity_of_enemies;
+
+  return found_all;
+}
+
+void reset_game() {
+  current_game_state = PLAYING;
+
+  eyeY = maxWidth / 2;
+  eyeX = maxHeight / 2;
+
+  reset_marco_polo();
+  marco_polo_used = MARCO_POLO_CHANCES;
+
+  timer = 120;
+  milliSeconds = 0;
+
+  // Positions
+  for (auto &positions : possible_positions)
+  {
+    positions[0] = ENEMY_ENABLED;
+  }
+
+  colliding = false;
+  enemy_id_collided = 0;
+  enemies_found = 0;
 }
