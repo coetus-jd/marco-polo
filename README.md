@@ -21,7 +21,9 @@ Studies and activities of the discipline of Console Games
 This project contains some projects and activities from the Console Games discipline in [FATEC Americana](https://www.fatec.edu.br/).
 
 ## :bricks: This project was built with: 
-- [C](https://www.cprogramming.com/)
+- [Arduino Uno](https://www.arduino.cc/)
+- [TVOut](https://github.com/Avamander/arduino-tvout)
+- [Wokwi](https://wokwi.com/)
 
 ## 🏄‍♂️ Quick Start
  1. Clone this repository `git clone https://github.com/coetus-jd/console-game.git`
