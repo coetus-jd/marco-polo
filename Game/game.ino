@@ -10,7 +10,10 @@
 TVout tv;
 
 // Game
-int current_game_state = IN_START_SCREEN;
+int current_game_state = 0;
+char game_name[] = "Neutron games";
+bool show_sinalization_found = false;
+int sinalization_found_time = 0;
 
 int eyeX = 0;
 int eyeY = 0;
@@ -28,17 +31,21 @@ int milliSeconds = 0;
 
 // Positions
 int possible_positions[5][4] = {
-  // Is enabled?   X   Y   Id
-  { ENEMY_ENABLED, 15, 15, 01 },
-  { ENEMY_ENABLED, 75, 60, 02 },
-  { ENEMY_ENABLED, 20, 60, 03 },
-  { ENEMY_ENABLED, 80, 80, 04 },
-  { ENEMY_ENABLED, 15, 80, 05 },
+  // Is enabled?    X  Y  Id
+  { ENEMY_DISABLED, 0, 0, 0 },
+  { ENEMY_DISABLED, 0, 0, 0 },
+  { ENEMY_DISABLED, 0, 0, 0 },
+  { ENEMY_DISABLED, 0, 0, 0 },
+  { ENEMY_DISABLED, 0, 0, 0 },
 };
 
-int ALL_CONTROLS[5] = { RIGHT_MOVEMENT, LEFT_MOVEMENT, UP_MOVEMENT, DOWN_MOVEMENT, ACTION };
-
-String title = "Pique esconde";
+int ALL_CONTROLS[5] = {
+  RIGHT_MOVEMENT,
+  LEFT_MOVEMENT,
+  UP_MOVEMENT,
+  DOWN_MOVEMENT,
+  ACTION
+};
 
 // Collision controls
 bool colliding = false;
@@ -46,16 +53,22 @@ int enemy_id_collided = 0;
 int enemies_found = 0;
 
 void setup() {
+  randomSeed(analogRead(A0));
+
   configure_buttons();
   configure_libraries();
   configure_debugger();
   configure_screen();
 
   // Starts the eye in the center
-  eyeX = maxHeight / 2;
-  eyeY = maxWidth / 2;
+  eyeX = maxWidth / 2;
+  eyeY = maxHeight - 10;
+
+  generate_enemies_positions();
 
   start_screen();
+  // win_screen();
+  // game_over_screen();
 }
 
 // OBS: don't use Serial.print inside a loop, for some reason its breaks
@@ -75,13 +88,17 @@ void loop() {
     return;
   }
 
-  tv.draw_rect(0, 0, maxWidth, maxHeight, WHITE);
+  draw_game_delimiters();
 
   show_debug_info();
   draw_all_enemies();
   draw_eyes();
   verify_if_has_collided_with_enemy();
   activate_marco_polo();
+
+  if (show_sinalization_found) {
+    show_sinalization();
+  }
 
   // control_game_time();
 }
@@ -107,24 +124,30 @@ void configure_debugger() {
   Serial.begin(9650);
 }
 
+void draw_game_delimiters() {
+  tv.draw_rect(0, 0, maxWidth, maxHeight, WHITE);
+}
+
 void start_screen() {
   current_game_state = IN_START_SCREEN;
 
   bool pressed = false;
   int center_point = 0;
 
-  has_pressed_any_button();
+  draw_game_delimiters();
+  center_point = x_position_to_center(game_name, maxWidth);
+
+  show_text(tv, 2, 10, game_name, font8x8);
+  tv.bitmap(3, 20, logo);
+  show_text(tv, 10, maxHeight - 10, "By Astha", font4x6);
+  show_text(tv, maxWidth - 50, maxHeight - 10, "FATEC AM", font4x6);
 
   do {
-    center_point = x_position_to_center(title, maxWidth);
-
-    show_text(tv, center_point, maxHeight - 10, "Pique esconde", font4x6);
-
     pressed = has_pressed_any_button();
-
-    tv.delay_frame(1);
-    tv.clear_screen();
   } while (!pressed);
+
+  tv.delay_frame(1);
+  tv.clear_screen();
 
   current_game_state = PLAYING;
 
@@ -133,46 +156,46 @@ void start_screen() {
 
 void game_over_screen() {
   bool pressed = false;
-  int center_point = 0;
-  int center_point_desc = 0;
+  char you_lose[] = "You lost";
+
+  draw_game_delimiters();
+
+  show_text(tv, 20, 10, you_lose);
+  show_text(tv, 40, 35, ":)");
+  show_text(tv, 25, maxHeight - 35, "Press any key", font4x6);
+  show_text(tv, 25, maxHeight - 25, "to play again", font4x6);
 
   do {
-    center_point = x_position_to_center("You lose", maxWidth);
-    show_text(tv, center_point, maxHeight - 55, "You lose");
-
     pressed = has_pressed_any_button();
-
-    tv.delay_frame(1);
-    tv.clear_screen();
   } while (!pressed);
+
+  tv.delay_frame(1);
+  tv.clear_screen();
+
+  reset_game();
+  scenery();
 }
 
 void win_screen() {
   bool pressed = false;
 
-  int win_center_point = 0;
-  int press_center_point = 0;
-  int play_center_point = 0;
+  char win_text[] = "You win!";
+  char press_text[] = "Press any key";
+  char play_text[] = "to play again";
 
-  String win_text = "You win!";
-  String press_text = "Press any key";
-  String play_text = "to play again";
+  draw_game_delimiters();
 
-  do  {
-    win_center_point = x_position_to_center(win_text, maxWidth);
-    press_center_point = x_position_to_center(press_text, maxWidth);
-    play_center_point = x_position_to_center(play_text, maxWidth);
+  show_text(tv, 20, 10, win_text);
+  show_text(tv, 40, 35, ":(");
+  show_text(tv, 25, maxHeight - 35, "Press any key", font4x6);
+  show_text(tv, 25, maxHeight - 25, "to play again", font4x6);
 
-    show_text(tv, win_center_point, maxHeight - 65, "You win!");
-
-    show_text(tv, press_center_point, maxHeight - 45, "Press any key", font4x6);
-    show_text(tv, play_center_point, maxHeight - 35, "to play again", font4x6);
-
+  do {
     pressed = has_pressed_any_button();
-
-    tv.delay_frame(1);
-    tv.clear_screen();
   } while (!pressed);
+
+  tv.delay_frame(1);
+  tv.clear_screen();
 
   reset_game();
   scenery();
@@ -283,38 +306,34 @@ void draw_all_enemies() {
     int x = positions[1];
     int y = positions[2];
     int id = positions[3];
-    
+
     // In the game the enemies will not be displayed
     // draw_enemy(x, y);
   }
 }
 
-// void draw_enemy(int x, int y) {
-//   tv.draw_rect(x, y, ENEMY_WIDTH, ENEMY_HEIGHT, WHITE);
-// }
+void draw_enemy(int x, int y) {
+  tv.draw_rect(x, y, ENEMY_WIDTH, ENEMY_HEIGHT, WHITE);
+}
 
 bool has_pressed_any_button() {
   int controls_length = (sizeof(ALL_CONTROLS) / sizeof(ALL_CONTROLS[0]));
-
-  Serial.println(controls_length);
 
   bool pressed = false;
 
   for (int index = 0; index < controls_length; index++) {
     if (digitalRead(ALL_CONTROLS[index]) == LOW) {
-      Serial.println("pressionou!");
       pressed = true;
     }
-
-    Serial.println("não pressionou!");
   }
-
-  Serial.println(pressed);
 
   return pressed;
 }
 
 void verify_if_has_collided_with_enemy() {
+  if (digitalRead(ACTION) != LOW)
+    return;
+
   for (auto &positions : possible_positions)
   {
     bool disable = positions[0] == ENEMY_DISABLED;
@@ -333,12 +352,11 @@ void verify_if_has_collided_with_enemy() {
   if (!colliding)
     return;
 
-  if (digitalRead(ACTION) != LOW)
-    return;
-
   // if (enemy_id_collided <= 0)
   //   Serial.println("Id invalid!");
 
+  show_sinalization_found = true;
+  
   disable_enemy(enemy_id_collided);
   enemies_found++;
 
@@ -399,7 +417,7 @@ void draw_marco_polo_indicators() {
     int x = positions[1];
     int y = positions[2];
 
-    show_text(tv, x, y - 6, "!", font4x6);
+    show_text(tv, x, y - 2, "!", font4x6);
   }
 }
 
@@ -457,4 +475,40 @@ void reset_game() {
   colliding = false;
   enemy_id_collided = 0;
   enemies_found = 0;
+}
+
+int get_random_x_coordinate() {
+  randomSeed(analogRead(A0));
+  return random(10, maxWidth - 20);
+}
+
+int get_random_y_coordinate() {
+  randomSeed(analogRead(A0));
+  return random(10, maxHeight - 20);
+}
+
+void generate_enemies_positions() {
+  int previous_id = 0;
+
+  for (auto &positions : possible_positions)
+  {
+    previous_id++;
+
+    positions[0] = ENEMY_ENABLED;
+    positions[1] = get_random_x_coordinate();
+    positions[2] = get_random_y_coordinate();
+    positions[3] = previous_id;
+  }
+}
+
+void show_sinalization() {
+  sinalization_found_time++;
+
+  if (sinalization_found_time >= DURATION_TO_SHOW_FOUND_SINALIZATION) {
+    show_sinalization_found = false;
+    sinalization_found_time = 0;
+    return;
+  }
+  
+  show_text(tv, eyeX + 2, eyeY - 10, ":)", font4x6);
 }
