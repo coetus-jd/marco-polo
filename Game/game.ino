@@ -356,7 +356,7 @@ void verify_if_has_collided_with_enemy() {
   //   Serial.println("Id invalid!");
 
   show_sinalization_found = true;
-  
+
   disable_enemy(enemy_id_collided);
   enemies_found++;
 
@@ -466,15 +466,14 @@ void reset_game() {
   timer = 120;
   milliSeconds = 0;
 
-  // Positions
-  for (auto &positions : possible_positions)
-  {
-    positions[0] = ENEMY_ENABLED;
-  }
+  generate_enemies_positions();
 
   colliding = false;
   enemy_id_collided = 0;
   enemies_found = 0;
+
+  show_sinalization_found = false;
+  sinalization_found_time = 0;
 }
 
 int get_random_x_coordinate() {
@@ -509,6 +508,6 @@ void show_sinalization() {
     sinalization_found_time = 0;
     return;
   }
-  
+
   show_text(tv, eyeX + 2, eyeY - 10, ":)", font4x6);
 }
