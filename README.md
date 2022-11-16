@@ -15,7 +15,7 @@ Studies and activities of the discipline of Console Games
 
 ## :eyes: Overview
 
-> Play on Wokwi: https://wokwi.com/projects/342819751626539604
+> Play on Wokwi: https://wokwi.com/projects/346622230205039186
 
 ## :open_book: About 
 This project contains some projects and activities from the Console Games discipline in [FATEC Americana](https://www.fatec.edu.br/).
