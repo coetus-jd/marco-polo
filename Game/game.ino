@@ -4,8 +4,9 @@
 #include "utils.h"
 #include "logo.h"
 #include "room_image.h"
-
-// using namespace std;
+#include "dark_scenary.h"
+#include "marco_icon.h"
+#include "polo_icon.h"
 
 TVout tv;
 
@@ -26,8 +27,9 @@ int marco_polo_used = MARCO_POLO_CHANCES;
 bool showing_marco_polo = false;
 
 // Timing
-int timer = 120;
-int milliSeconds = 0;
+int timer = GAME_DURATION;
+int one_second = 1000;
+int milli_seconds = 0;
 
 // Positions
 int possible_positions[5][4] = {
@@ -73,9 +75,6 @@ void setup() {
 
 // OBS: don't use Serial.print inside a loop, for some reason its breaks
 void loop() {
-  tv.delay_frame(1);
-  tv.clear_screen();
-
   if (current_game_state == WIN)
   {
     win_screen();
@@ -88,19 +87,26 @@ void loop() {
     return;
   }
 
+  tv.delay_frame(1);
+  tv.clear_screen();
+
   draw_game_delimiters();
 
-  show_debug_info();
+  control_game_time();
   draw_all_enemies();
   draw_eyes();
+
+  // if (!has_pressed_any_button())
+  //   return;
+  
+  show_debug_info();
+
   verify_if_has_collided_with_enemy();
   activate_marco_polo();
 
   if (show_sinalization_found) {
     show_sinalization();
   }
-
-  // control_game_time();
 }
 
 void configure_buttons() {
@@ -125,7 +131,7 @@ void configure_debugger() {
 }
 
 void draw_game_delimiters() {
-  tv.draw_rect(0, 0, maxWidth, maxHeight, WHITE);
+  tv.bitmap((tv.hres() - dark_scenary[0]) - 10, (tv.vres() - dark_scenary[1]) / 2, dark_scenary);
 }
 
 void start_screen() {
@@ -137,10 +143,10 @@ void start_screen() {
   draw_game_delimiters();
   center_point = x_position_to_center(game_name, maxWidth);
 
-  show_text(tv, 2, 10, game_name, font8x8);
-  tv.bitmap(3, 20, logo);
-  show_text(tv, 10, maxHeight - 10, "By Astha", font4x6);
-  show_text(tv, maxWidth - 50, maxHeight - 10, "FATEC AM", font4x6);
+  show_text(tv, 30, 30, game_name, font4x6);
+  // tv.bitmap(3, 20, logo);
+  show_text(tv, 10, maxHeight - 20, "By Astha", font4x6);
+  show_text(tv, maxWidth - 40, maxHeight - 20, "FATEC AM", font4x6);
 
   do {
     pressed = has_pressed_any_button();
@@ -235,7 +241,7 @@ void draw_eyes() {
   // Right
   tv.draw_rect(eyeX + 5, eyeY, 3, 3, WHITE);
 
-  if (eyeX < (maxWidth - EYE_WIDTH - 1) && digitalRead(RIGHT_MOVEMENT) == LOW) {
+  if (eyeX < (maxWidth - EYE_WIDTH - 6) && digitalRead(RIGHT_MOVEMENT) == LOW) {
     // Left iris
     tv.draw_rect(eyeX + 1, eyeY + 1, 1, 1, WHITE);
     tv.draw_rect(eyeX + 2, eyeY + 1, 1, 1, BLACK);
@@ -246,7 +252,7 @@ void draw_eyes() {
     eyeX++;
   }
 
-  if (eyeX > 1 && digitalRead(LEFT_MOVEMENT) == LOW) {
+  if (eyeX > 6 && digitalRead(LEFT_MOVEMENT) == LOW) {
     // Left iris
     tv.draw_rect(eyeX + 1, eyeY + 1, 1, 1, WHITE);
     tv.draw_rect(eyeX, eyeY + 1, 1, 1, BLACK);
@@ -257,7 +263,7 @@ void draw_eyes() {
     eyeX--;
   }
 
-  if (eyeY > 1 && digitalRead(UP_MOVEMENT) == LOW) {
+  if (eyeY > 16 && digitalRead(UP_MOVEMENT) == LOW) {
     // Left iris
     tv.draw_rect(eyeX + 1, eyeY + 1, 1, 1, WHITE);
     tv.draw_rect(eyeX + 1, eyeY, 1, 1, BLACK);
@@ -268,7 +274,7 @@ void draw_eyes() {
     eyeY--;
   }
 
-  if (eyeY < (maxHeight - EYE_HEIGHT - 1) && digitalRead(DOWN_MOVEMENT) == LOW) {
+  if (eyeY < (maxHeight - EYE_HEIGHT - 7) && digitalRead(DOWN_MOVEMENT) == LOW) {
     // Left iris
     tv.draw_rect(eyeX + 1, eyeY + 1, 1, 1, WHITE);
     tv.draw_rect(eyeX + 1, eyeY + 2, 1, 1, BLACK);
@@ -289,10 +295,10 @@ void show_debug_info() {
   tv.print(2, 15, eyeY);
 
   // Show the number of marco polo used
-  tv.print(maxWidth - 10, 5, marco_polo_used);
+  tv.print(maxWidth - 12, 5, marco_polo_used);
 
   // Show the number of marco polo used
-  tv.print(maxWidth - 10, maxHeight - 10, enemies_found);
+  tv.print(maxWidth - 12, maxHeight - 15, enemies_found);
 }
 
 void draw_all_enemies() {
@@ -307,7 +313,7 @@ void draw_all_enemies() {
     int y = positions[2];
     int id = positions[3];
 
-    // In the game the enemies will not be displayed
+    // In the real game the enemies will not be displayed
     // draw_enemy(x, y);
   }
 }
@@ -315,6 +321,7 @@ void draw_all_enemies() {
 void draw_enemy(int x, int y) {
   tv.draw_rect(x, y, ENEMY_WIDTH, ENEMY_HEIGHT, WHITE);
 }
+
 
 bool has_pressed_any_button() {
   int controls_length = (sizeof(ALL_CONTROLS) / sizeof(ALL_CONTROLS[0]));
@@ -380,23 +387,25 @@ void collision_confirm(int enemy_x, int enemy_y, int enemy_id) {
 }
 
 void control_game_time() {
-  int seconds = millis() - milliSeconds;
+  int seconds = millis() - milli_seconds;
+  tv.print(50, 5, timer);
 
-  if (seconds >= GAME_DURATION)
+  if (seconds >= one_second)
   {
-    timer = timer - 1;
-    // Serial.println(timer);
-    // Serial.println(seconds);
-    // Serial.println(milliSeconds);
-    milliSeconds = millis();
+    timer -= 1;
+    milli_seconds = millis();
   }
 
-  // current_game_state = LOST;
+  if (timer == 0)
+  {
+    current_game_state = LOST;
+  }
 }
 
 void scenery() {
   tv.bitmap((tv.hres() - room_image[0]) - 10, (tv.vres() - room_image[1]) / 2, room_image);
   tv.delay_frame(75);
+  // tv.clear_screen();
 }
 
 void marco_polo() {
@@ -406,7 +415,8 @@ void marco_polo() {
 }
 
 void draw_marco_polo_indicators() {
-  show_text(tv, eyeX + 3, eyeY - 6, "?", font4x6);
+  // show_text(tv, eyeX + 3, eyeY - 6, "?", font4x6);
+  tv.bitmap(eyeX - 4, eyeY - 15, marco_icon);
 
   for (auto &positions : possible_positions)
   {
@@ -417,7 +427,8 @@ void draw_marco_polo_indicators() {
     int x = positions[1];
     int y = positions[2];
 
-    show_text(tv, x, y - 2, "!", font4x6);
+    // show_text(tv, x, y - 2, "!", font4x6);
+    tv.bitmap(x - 5, y, polo_icon);
   }
 }
 
@@ -463,8 +474,8 @@ void reset_game() {
   reset_marco_polo();
   marco_polo_used = MARCO_POLO_CHANCES;
 
-  timer = 120;
-  milliSeconds = 0;
+  timer = GAME_DURATION;
+  milli_seconds = 0;
 
   generate_enemies_positions();
 
@@ -477,13 +488,13 @@ void reset_game() {
 }
 
 int get_random_x_coordinate() {
-  randomSeed(analogRead(A0));
-  return random(10, maxWidth - 20);
+  // randomSeed(analogRead(A0));
+  return random(20, maxWidth - 20);
 }
 
 int get_random_y_coordinate() {
-  randomSeed(analogRead(A0));
-  return random(10, maxHeight - 20);
+  // randomSeed(analogRead(A0));
+  return random(20, maxHeight - 20);
 }
 
 void generate_enemies_positions() {
