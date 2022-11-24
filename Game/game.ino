@@ -15,6 +15,7 @@ int current_game_state = 0;
 char game_name[] = "Neutron games";
 bool show_sinalization_found = false;
 int sinalization_found_time = 0;
+bool force_loop_run = false;
 
 int eyeX = 0;
 int eyeY = 0;
@@ -63,14 +64,12 @@ void setup() {
   configure_screen();
 
   // Starts the eye in the center
-  eyeX = maxWidth / 2;
-  eyeY = maxHeight - 10;
+  eyeX = (maxWidth / 2) - 5;
+  eyeY = maxHeight - 20;
 
   generate_enemies_positions();
 
   start_screen();
-  // win_screen();
-  // game_over_screen();
 }
 
 // OBS: don't use Serial.print inside a loop, for some reason its breaks
@@ -87,26 +86,29 @@ void loop() {
     return;
   }
 
+  // if (!has_pressed_any_button() && force_loop_run)
+  //   return;
+
   tv.delay_frame(1);
   tv.clear_screen();
 
   draw_game_delimiters();
 
-  control_game_time();
   draw_all_enemies();
   draw_eyes();
-
-  // if (!has_pressed_any_button())
-  //   return;
   
   show_debug_info();
 
   verify_if_has_collided_with_enemy();
+
+  control_game_time();
   activate_marco_polo();
 
   if (show_sinalization_found) {
     show_sinalization();
   }
+
+  force_loop_run = true;
 }
 
 void configure_buttons() {
@@ -131,7 +133,28 @@ void configure_debugger() {
 }
 
 void draw_game_delimiters() {
-  tv.bitmap((tv.hres() - dark_scenary[0]) - 10, (tv.vres() - dark_scenary[1]) / 2, dark_scenary);
+  // tv.bitmap((tv.hres() - dark_scenary[0]) - 10, (tv.vres() - dark_scenary[1]) / 2, dark_scenary);
+  tv.draw_rect(0, 0, maxWidth, maxHeight, WHITE);
+
+  tv.draw_rect(RIGHT_WALL_WIDTH, UP_WALL_HEIGHT, maxWidth - 12, maxHeight - 24, WHITE);
+
+  // Line in the upper left
+  tv.draw_line(1, 1, RIGHT_WALL_WIDTH, UP_WALL_HEIGHT, WHITE);
+  // Line in the lower left
+  tv.draw_line(1, maxHeight - 1, LEFT_WALL_WIDTH - 1, maxHeight - DOWN_WALL_HEIGHT - 2, WHITE);
+  
+
+  // Line in the upper right
+  tv.draw_line(maxWidth, 0, maxWidth - RIGHT_WALL_WIDTH, UP_WALL_HEIGHT, WHITE);
+  // Line in the lower right
+  tv.draw_line(maxWidth - 1, maxHeight - 1, maxWidth - RIGHT_WALL_WIDTH, maxHeight - DOWN_WALL_HEIGHT - 2, WHITE);
+
+
+  // Door
+  tv.draw_line((maxWidth / 2) - 10, maxHeight - 1, (maxWidth / 2) + 10, maxHeight - 1, BLACK);
+  tv.draw_line((maxWidth / 2) - 10, maxHeight - 1, (maxWidth / 2) - 8, maxHeight - DOWN_WALL_HEIGHT - 1, WHITE);
+  tv.draw_line((maxWidth / 2) + 10, maxHeight - 1, (maxWidth / 2) + 8, maxHeight - DOWN_WALL_HEIGHT - 1, WHITE);
+  // tv.draw_line((maxWidth / 2) - 10, maxHeight - 1, (maxWidth / 2) + 10, maxHeight - 1, BLACK);
 }
 
 void start_screen() {
@@ -140,11 +163,12 @@ void start_screen() {
   bool pressed = false;
   int center_point = 0;
 
-  draw_game_delimiters();
+  tv.draw_rect(0, 0, maxWidth, maxHeight, WHITE);
+
   center_point = x_position_to_center(game_name, maxWidth);
 
   show_text(tv, 30, 30, game_name, font4x6);
-  // tv.bitmap(3, 20, logo);
+  tv.bitmap(8, 10, logo);
   show_text(tv, 10, maxHeight - 20, "By Astha", font4x6);
   show_text(tv, maxWidth - 40, maxHeight - 20, "FATEC AM", font4x6);
 
@@ -171,6 +195,8 @@ void game_over_screen() {
   show_text(tv, 25, maxHeight - 35, "Press any key", font4x6);
   show_text(tv, 25, maxHeight - 25, "to play again", font4x6);
 
+  delay(1000);
+
   do {
     pressed = has_pressed_any_button();
   } while (!pressed);
@@ -195,6 +221,8 @@ void win_screen() {
   show_text(tv, 40, 35, ":(");
   show_text(tv, 25, maxHeight - 35, "Press any key", font4x6);
   show_text(tv, 25, maxHeight - 25, "to play again", font4x6);
+
+  delay(1000);
 
   do {
     pressed = has_pressed_any_button();
@@ -237,51 +265,51 @@ void activate_marco_polo() {
 
 void draw_eyes() {
   // Left
-  tv.draw_rect(eyeX, eyeY, 3, 3, WHITE);
+  tv.draw_rect(eyeX, eyeY, 3, 4, WHITE);
   // Right
-  tv.draw_rect(eyeX + 5, eyeY, 3, 3, WHITE);
+  tv.draw_rect(eyeX + 5, eyeY, 3, 4, WHITE);
 
-  if (eyeX < (maxWidth - EYE_WIDTH - 6) && digitalRead(RIGHT_MOVEMENT) == LOW) {
+  if (eyeX < (maxWidth - EYE_WIDTH - 8) && digitalRead(RIGHT_MOVEMENT) == LOW) {
     // Left iris
-    tv.draw_rect(eyeX + 1, eyeY + 1, 1, 1, WHITE);
-    tv.draw_rect(eyeX + 2, eyeY + 1, 1, 1, BLACK);
+    tv.draw_rect(eyeX + 1, eyeY + 1, 1, 2, WHITE);
+    tv.draw_rect(eyeX + 2, eyeY + 1, 1, 2, BLACK);
 
     // Right iris
-    tv.draw_rect(eyeX + 6, eyeY + 1, 1, 1, WHITE);
-    tv.draw_rect(eyeX + 7, eyeY + 1, 1, 1, BLACK);
+    tv.draw_rect(eyeX + 6, eyeY + 1, 1, 2, WHITE);
+    tv.draw_rect(eyeX + 7, eyeY + 1, 1, 2, BLACK);
     eyeX++;
   }
 
-  if (eyeX > 6 && digitalRead(LEFT_MOVEMENT) == LOW) {
+  if (eyeX > 8 && digitalRead(LEFT_MOVEMENT) == LOW) {
     // Left iris
-    tv.draw_rect(eyeX + 1, eyeY + 1, 1, 1, WHITE);
-    tv.draw_rect(eyeX, eyeY + 1, 1, 1, BLACK);
+    tv.draw_rect(eyeX + 1, eyeY + 1, 1, 2, WHITE);
+    tv.draw_rect(eyeX, eyeY + 1, 1, 2, BLACK);
 
     // Right iris
-    tv.draw_rect(eyeX + 6, eyeY + 1, 1, 1, WHITE);
-    tv.draw_rect(eyeX + 5, eyeY + 1, 1, 1, BLACK);
+    tv.draw_rect(eyeX + 6, eyeY + 1, 1, 2, WHITE);
+    tv.draw_rect(eyeX + 5, eyeY + 1, 1, 2, BLACK);
     eyeX--;
   }
 
-  if (eyeY > 16 && digitalRead(UP_MOVEMENT) == LOW) {
+  if (eyeY > 18 && digitalRead(UP_MOVEMENT) == LOW) {
     // Left iris
-    tv.draw_rect(eyeX + 1, eyeY + 1, 1, 1, WHITE);
-    tv.draw_rect(eyeX + 1, eyeY, 1, 1, BLACK);
+    tv.draw_rect(eyeX + 1, eyeY + 1, 1, 2, WHITE);
+    tv.draw_rect(eyeX + 1, eyeY, 1, 2, BLACK);
 
     // Right iris
-    tv.draw_rect(eyeX + 6, eyeY + 1, 1, 1, WHITE);
-    tv.draw_rect(eyeX + 6, eyeY, 1, 1, BLACK);
+    tv.draw_rect(eyeX + 6, eyeY + 1, 1, 2, WHITE);
+    tv.draw_rect(eyeX + 6, eyeY, 1, 2, BLACK);
     eyeY--;
   }
 
-  if (eyeY < (maxHeight - EYE_HEIGHT - 7) && digitalRead(DOWN_MOVEMENT) == LOW) {
+  if (eyeY < (maxHeight - EYE_HEIGHT - 10) && digitalRead(DOWN_MOVEMENT) == LOW) {
     // Left iris
-    tv.draw_rect(eyeX + 1, eyeY + 1, 1, 1, WHITE);
-    tv.draw_rect(eyeX + 1, eyeY + 2, 1, 1, BLACK);
+    tv.draw_rect(eyeX + 1, eyeY + 1, 1, 2, WHITE);
+    tv.draw_rect(eyeX + 1, eyeY + 2, 1, 2, BLACK);
 
     // Right iris
-    tv.draw_rect(eyeX + 6, eyeY + 1, 1, 1, WHITE);
-    tv.draw_rect(eyeX + 6, eyeY + 2, 1, 1, BLACK);
+    tv.draw_rect(eyeX + 6, eyeY + 1, 1, 2, WHITE);
+    tv.draw_rect(eyeX + 6, eyeY + 2, 1, 2, BLACK);
     eyeY++;
   }
 }
@@ -404,8 +432,8 @@ void control_game_time() {
 
 void scenery() {
   tv.bitmap((tv.hres() - room_image[0]) - 10, (tv.vres() - room_image[1]) / 2, room_image);
-  tv.delay_frame(75);
-  // tv.clear_screen();
+  tv.delay_frame(125);
+  tv.clear_screen();
 }
 
 void marco_polo() {
