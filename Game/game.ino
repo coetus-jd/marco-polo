@@ -1,10 +1,11 @@
+// Importa a biblioteca
 #include <TVout.h>
 #include <TVoutfonts/fontALL.h>
 #include "constants.h"
 #include "utils.h"
 #include "logo.h"
 #include "room_image.h"
-#include "dark_scenary.h"
+// #include "dark_scenary.h"
 #include "marco_icon.h"
 #include "polo_icon.h"
 
@@ -29,7 +30,7 @@ bool showing_marco_polo = false;
 
 // Timing
 int timer = GAME_DURATION;
-int one_second = 1000;
+int one_second = 333;
 int milli_seconds = 0;
 
 // Positions
@@ -64,11 +65,11 @@ void setup() {
   configure_screen();
 
   // Starts the eye in the center
-  eyeX = (maxWidth / 2) - 5;
+  eyeX = (maxWidth / 2) - 4;
   eyeY = maxHeight - 20;
 
   generate_enemies_positions();
-
+  
   start_screen();
 }
 
@@ -86,9 +87,6 @@ void loop() {
     return;
   }
 
-  // if (!has_pressed_any_button() && force_loop_run)
-  //   return;
-
   tv.delay_frame(1);
   tv.clear_screen();
 
@@ -96,7 +94,7 @@ void loop() {
 
   draw_all_enemies();
   draw_eyes();
-  
+
   show_debug_info();
 
   verify_if_has_collided_with_enemy();
@@ -117,6 +115,7 @@ void configure_buttons() {
   pinMode(UP_MOVEMENT, INPUT_PULLUP);
   pinMode(DOWN_MOVEMENT, INPUT_PULLUP);
   pinMode(ACTION, INPUT_PULLUP);
+  pinMode(SOUND, OUTPUT);
 }
 
 void configure_libraries() {
@@ -142,13 +141,12 @@ void draw_game_delimiters() {
   tv.draw_line(1, 1, RIGHT_WALL_WIDTH, UP_WALL_HEIGHT, WHITE);
   // Line in the lower left
   tv.draw_line(1, maxHeight - 1, LEFT_WALL_WIDTH - 1, maxHeight - DOWN_WALL_HEIGHT - 2, WHITE);
-  
+
 
   // Line in the upper right
   tv.draw_line(maxWidth, 0, maxWidth - RIGHT_WALL_WIDTH, UP_WALL_HEIGHT, WHITE);
   // Line in the lower right
   tv.draw_line(maxWidth - 1, maxHeight - 1, maxWidth - RIGHT_WALL_WIDTH, maxHeight - DOWN_WALL_HEIGHT - 2, WHITE);
-
 
   // Door
   tv.draw_line((maxWidth / 2) - 10, maxHeight - 1, (maxWidth / 2) + 10, maxHeight - 1, BLACK);
@@ -161,16 +159,18 @@ void start_screen() {
   current_game_state = IN_START_SCREEN;
 
   bool pressed = false;
-  int center_point = 0;
+
+  tv.delay_frame(1);
+  tv.clear_screen();
 
   tv.draw_rect(0, 0, maxWidth, maxHeight, WHITE);
 
-  center_point = x_position_to_center(game_name, maxWidth);
-
   show_text(tv, 30, 30, game_name, font4x6);
   tv.bitmap(8, 10, logo);
-  show_text(tv, 10, maxHeight - 20, "By Astha", font4x6);
+  show_text(tv, 10, maxHeight - 20, "BY ASTHA", font4x6);
   show_text(tv, maxWidth - 40, maxHeight - 20, "FATEC AM", font4x6);
+
+  delay(2000);
 
   do {
     pressed = has_pressed_any_button();
@@ -180,7 +180,6 @@ void start_screen() {
   tv.clear_screen();
 
   current_game_state = PLAYING;
-
   scenery();
 }
 
@@ -188,14 +187,19 @@ void game_over_screen() {
   bool pressed = false;
   char you_lose[] = "You lost";
 
-  draw_game_delimiters();
+  tv.delay_frame(1);
+  tv.clear_screen();
+
+  tv.draw_rect(0, 0, maxWidth, maxHeight, WHITE);
 
   show_text(tv, 20, 10, you_lose);
   show_text(tv, 40, 35, ":)");
   show_text(tv, 25, maxHeight - 35, "Press any key", font4x6);
   show_text(tv, 25, maxHeight - 25, "to play again", font4x6);
 
-  delay(1000);
+  // Som de derrota
+  // play_sound(200, 40);
+  delay(2000);
 
   do {
     pressed = has_pressed_any_button();
@@ -205,7 +209,7 @@ void game_over_screen() {
   tv.clear_screen();
 
   reset_game();
-  scenery();
+  start_screen();
 }
 
 void win_screen() {
@@ -215,14 +219,19 @@ void win_screen() {
   char press_text[] = "Press any key";
   char play_text[] = "to play again";
 
-  draw_game_delimiters();
+  tv.delay_frame(1);
+  tv.clear_screen();
+
+  tv.draw_rect(0, 0, maxWidth, maxHeight, WHITE);
 
   show_text(tv, 20, 10, win_text);
   show_text(tv, 40, 35, ":(");
   show_text(tv, 25, maxHeight - 35, "Press any key", font4x6);
   show_text(tv, 25, maxHeight - 25, "to play again", font4x6);
 
-  delay(1000);
+  // Som de vitória
+  // play_sound(150, 30);
+  delay(2000);
 
   do {
     pressed = has_pressed_any_button();
@@ -232,7 +241,7 @@ void win_screen() {
   tv.clear_screen();
 
   reset_game();
-  scenery();
+  start_screen();
 }
 
 void activate_marco_polo() {
@@ -318,9 +327,9 @@ void show_debug_info() {
   tv.select_font(font4x6);
 
   // Show the current X value of the player
-  tv.print(2, 5, eyeX);
+  // tv.print(2, 5, eyeX);
   // Show the current Y value of the player
-  tv.print(2, 15, eyeY);
+  // tv.print(2, 15, eyeY);
 
   // Show the number of marco polo used
   tv.print(maxWidth - 12, 5, marco_polo_used);
@@ -349,7 +358,6 @@ void draw_all_enemies() {
 void draw_enemy(int x, int y) {
   tv.draw_rect(x, y, ENEMY_WIDTH, ENEMY_HEIGHT, WHITE);
 }
-
 
 bool has_pressed_any_button() {
   int controls_length = (sizeof(ALL_CONTROLS) / sizeof(ALL_CONTROLS[0]));
@@ -395,10 +403,16 @@ void verify_if_has_collided_with_enemy() {
   disable_enemy(enemy_id_collided);
   enemies_found++;
 
+  // Achou
+  play_sound(100, 10);
+
   bool find_all = found_all_enemies();
 
   if (find_all)
+  {
+    delay(500);
     current_game_state = WIN;
+  }
 }
 
 void collision_confirm(int enemy_x, int enemy_y, int enemy_id) {
@@ -432,11 +446,13 @@ void control_game_time() {
 
 void scenery() {
   tv.bitmap((tv.hres() - room_image[0]) - 10, (tv.vres() - room_image[1]) / 2, room_image);
-  tv.delay_frame(125);
+  tv.delay_frame(250);
   tv.clear_screen();
 }
 
 void marco_polo() {
+  // Chamar Marco Polo
+  // play_sound(150, 20);
   marco_polo_used--;
   showing_marco_polo = true;
   draw_marco_polo_indicators();
@@ -549,4 +565,45 @@ void show_sinalization() {
   }
 
   show_text(tv, eyeX + 2, eyeY - 10, ":)", font4x6);
+}
+
+void play_sound(int time_delay, int which_sound) {
+// Serial.println("Chegou no ínicio");
+//   if (which_sound == 10) //found
+//   {
+//     for (int i = 0; i < sizeof(sound_found); i++)
+
+//     {
+//       tone(SOUND, sound_found[i]);
+//       delay(time_delay);
+//     }
+//   }
+//   else if (which_sound == 20) //Marco Polo
+//   {
+//     for (int i = 0; i < sizeof(sound_call); i++)
+//     {
+//       tone(SOUND, sound_call[i]);
+//       delay(time_delay);
+//     }
+//   }
+//   else if (which_sound == 30) //Win
+//   {
+//     for (int i = 0; i < sizeof(sound_win); i++)
+//     {
+//       tone(SOUND, sound_win[i]);
+//       delay(time_delay);
+//     }
+//   }
+//   else if (which_sound == 40) //Lose
+//   {
+//     for (int i = 0; i < sizeof(sound_lose); i++)
+//     {
+//       tone(SOUND, sound_lose[i]);
+//       delay(time_delay);
+//     }
+
+//   }
+
+//   noTone(SOUND);
+//   Serial.println("Chegou no fim");
 }
