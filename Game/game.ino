@@ -1,47 +1,42 @@
-// Importa a biblioteca
+// Importa a biblioteca TVOut e sua biblioteca para fontes
 #include <TVout.h>
 #include <TVoutfonts/fontALL.h>
+// Valores contantes utilizados por todo o jogo
 #include "constants.h"
+
+// Classe de utilidade, com abstrações de tarefas comuns
 #include "utils.h"
+
+// Imagem da logo do projeto
 #include "logo.h"
+
+// Imagem da sala do jogo quando as luzes estão acesas
 #include "room_image.h"
+
+// Imagem da sala do jogo quando as luzes estão apagadas
+// Não utilizado pois estava ficando muito pesado no jogo, foi recriado a imagem
+// manualmente na função (draw_game_delimiters)
 // #include "dark_scenary.h"
+
+// Imagem com um balão de "Marco"
 #include "marco_icon.h"
+
+// Imagem com um balão de "Polo"
 #include "polo_icon.h"
 
+// Objeto da biblioteca TVOut
 TVout tv;
 
-// Game
+// Variáveis relacionadas ao game no geral
 int current_game_state = 0;
 char game_name[] = "Neutron games";
-bool show_sinalization_found = false;
-int sinalization_found_time = 0;
-bool force_loop_run = false;
+int signalization_found_time = 0;
+bool show_signalization_found = false;
 
 int eyeX = 0;
 int eyeY = 0;
 int maxHeight = 0;
 int maxWidth = 0;
-
-// Marco polo
-int marco_polo_timer = 0;
-int marco_polo_used = MARCO_POLO_CHANCES;
-bool showing_marco_polo = false;
-
-// Timing
-int timer = GAME_DURATION;
-int one_second = 333;
-int milli_seconds = 0;
-
-// Positions
-int possible_positions[5][4] = {
-  // Is enabled?    X  Y  Id
-  { ENEMY_DISABLED, 0, 0, 0 },
-  { ENEMY_DISABLED, 0, 0, 0 },
-  { ENEMY_DISABLED, 0, 0, 0 },
-  { ENEMY_DISABLED, 0, 0, 0 },
-  { ENEMY_DISABLED, 0, 0, 0 },
-};
 
 int ALL_CONTROLS[5] = {
   RIGHT_MOVEMENT,
@@ -51,38 +46,61 @@ int ALL_CONTROLS[5] = {
   ACTION
 };
 
-// Collision controls
+// Variáveis relacionadas ao marco polo
+int marco_polo_timer = 0;
+int marco_polo_used = MARCO_POLO_CHANCES;
+bool showing_marco_polo = false;
+
+// Variáveis relacionadas a duração do game
+int timer = GAME_DURATION;
+int one_second = 333;
+int milli_seconds = 0;
+
+// Matriz com todas as posições dos inimigos (posições geradas na função generate_enemies_positions())
+int possible_positions[5][4] = {
+  // Is enabled?   X  Y  Id
+  {ENEMY_DISABLED, 0, 0, 0},
+  {ENEMY_DISABLED, 0, 0, 0},
+  {ENEMY_DISABLED, 0, 0, 0},
+  {ENEMY_DISABLED, 0, 0, 0},
+  {ENEMY_DISABLED, 0, 0, 0},
+};
+
+// Controles de colisão
 bool colliding = false;
 int enemy_id_collided = 0;
 int enemies_found = 0;
 
+// Inicializa o jogo
 void setup() {
+  // Alimenta o randomizador do Arduino para tentar ao máximo gerar números diferentes
   randomSeed(analogRead(A0));
-
+  
   configure_buttons();
   configure_libraries();
   configure_debugger();
   configure_screen();
 
-  // Starts the eye in the center
+  // Coloca o olho iniciando sempre ao centro
   eyeX = (maxWidth / 2) - 4;
   eyeY = maxHeight - 20;
 
   generate_enemies_positions();
-  
+
   start_screen();
 }
 
-// OBS: don't use Serial.print inside a loop, for some reason its breaks
+// Método que será chamado a cada frame no jogo
+// OBS: Não usar o Serial.print dentro do loop, por alguma razão alguns comportamentos estranhos
+// acontecem dentro do Wowki
 void loop() {
-  if (current_game_state == WIN)
-  {
+  // Caso o jogador tenha vencido o jogo é necessário somente exibir a tela de vencer
+  if (current_game_state == WIN) {
     win_screen();
     return;
   }
 
-  if (current_game_state == LOST)
-  {
+  if (current_game_state == LOST) {
     game_over_screen();
     return;
   }
@@ -102,12 +120,11 @@ void loop() {
   control_game_time();
   activate_marco_polo();
 
-  if (show_sinalization_found) {
-    show_sinalization();
+  if (show_signalization_found) {
+    show_signalization();
   }
-
-  force_loop_run = true;
 }
+// Configura todos os botões e componentes utilizados no jogo
 
 void configure_buttons() {
   pinMode(RIGHT_MOVEMENT, INPUT_PULLUP);
@@ -118,43 +135,54 @@ void configure_buttons() {
   pinMode(SOUND, OUTPUT);
 }
 
+// Configura todas as bibliotecas utilizadas
 void configure_libraries() {
   tv.begin(NTSC, SCREEN_WIDTH, SCREEN_HEIGHT);
 }
 
+// Configura o tamanho da tela jogável
 void configure_screen() {
   maxWidth = tv.hres() - 10;
   maxHeight = tv.vres() - 3;
 }
 
+// Configura o debugger do Arduino
 void configure_debugger() {
   Serial.begin(9650);
 }
 
 void draw_game_delimiters() {
-  // tv.bitmap((tv.hres() - dark_scenary[0]) - 10, (tv.vres() - dark_scenary[1]) / 2, dark_scenary);
+  // tv.bitmap((tv.hres() - dark_scenary[0]) - 10, (tv.vres() - dark_scenary[1])
+  // / 2, dark_scenary);
   tv.draw_rect(0, 0, maxWidth, maxHeight, WHITE);
 
-  tv.draw_rect(RIGHT_WALL_WIDTH, UP_WALL_HEIGHT, maxWidth - 12, maxHeight - 24, WHITE);
+  tv.draw_rect(RIGHT_WALL_WIDTH, UP_WALL_HEIGHT, maxWidth - 12, maxHeight - 24,
+               WHITE);
 
   // Line in the upper left
   tv.draw_line(1, 1, RIGHT_WALL_WIDTH, UP_WALL_HEIGHT, WHITE);
   // Line in the lower left
-  tv.draw_line(1, maxHeight - 1, LEFT_WALL_WIDTH - 1, maxHeight - DOWN_WALL_HEIGHT - 2, WHITE);
-
+  tv.draw_line(1, maxHeight - 1, LEFT_WALL_WIDTH - 1,
+               maxHeight - DOWN_WALL_HEIGHT - 2, WHITE);
 
   // Line in the upper right
   tv.draw_line(maxWidth, 0, maxWidth - RIGHT_WALL_WIDTH, UP_WALL_HEIGHT, WHITE);
   // Line in the lower right
-  tv.draw_line(maxWidth - 1, maxHeight - 1, maxWidth - RIGHT_WALL_WIDTH, maxHeight - DOWN_WALL_HEIGHT - 2, WHITE);
+  tv.draw_line(maxWidth - 1, maxHeight - 1, maxWidth - RIGHT_WALL_WIDTH,
+               maxHeight - DOWN_WALL_HEIGHT - 2, WHITE);
 
   // Door
-  tv.draw_line((maxWidth / 2) - 10, maxHeight - 1, (maxWidth / 2) + 10, maxHeight - 1, BLACK);
-  tv.draw_line((maxWidth / 2) - 10, maxHeight - 1, (maxWidth / 2) - 8, maxHeight - DOWN_WALL_HEIGHT - 1, WHITE);
-  tv.draw_line((maxWidth / 2) + 10, maxHeight - 1, (maxWidth / 2) + 8, maxHeight - DOWN_WALL_HEIGHT - 1, WHITE);
-  // tv.draw_line((maxWidth / 2) - 10, maxHeight - 1, (maxWidth / 2) + 10, maxHeight - 1, BLACK);
+  tv.draw_line((maxWidth / 2) - 10, maxHeight - 1, (maxWidth / 2) + 10,
+               maxHeight - 1, BLACK);
+  tv.draw_line((maxWidth / 2) - 10, maxHeight - 1, (maxWidth / 2) - 8,
+               maxHeight - DOWN_WALL_HEIGHT - 1, WHITE);
+  tv.draw_line((maxWidth / 2) + 10, maxHeight - 1, (maxWidth / 2) + 8,
+               maxHeight - DOWN_WALL_HEIGHT - 1, WHITE);
+  // tv.draw_line((maxWidth / 2) - 10, maxHeight - 1, (maxWidth / 2) + 10,
+  // maxHeight - 1, BLACK);
 }
 
+// Exibe a tela de início
 void start_screen() {
   current_game_state = IN_START_SCREEN;
 
@@ -245,8 +273,8 @@ void win_screen() {
 }
 
 void activate_marco_polo() {
-  // If is showing the indicator and already used all marco polos, we need to await and continue showing
-  // the indicators
+  // If is showing the indicator and already used all marco polos, we need to
+  // await and continue showing the indicators
   if (marco_polo_used == 0 && !showing_marco_polo)
     return;
 
@@ -262,7 +290,8 @@ void activate_marco_polo() {
   }
 
   // Controls for how long the marco polo indicators (?, !) will be displayed
-  if (showing_marco_polo && ((marco_polo_timer - TIME_MARCO_POLO) >= MARCO_POLO_SHOWING_TIME)) {
+  if (showing_marco_polo &&
+      ((marco_polo_timer - TIME_MARCO_POLO) >= MARCO_POLO_SHOWING_TIME)) {
     // Serial.println("Reset marco polo");
     reset_marco_polo();
     return;
@@ -311,7 +340,8 @@ void draw_eyes() {
     eyeY--;
   }
 
-  if (eyeY < (maxHeight - EYE_HEIGHT - 10) && digitalRead(DOWN_MOVEMENT) == LOW) {
+  if (eyeY < (maxHeight - EYE_HEIGHT - 10) &&
+      digitalRead(DOWN_MOVEMENT) == LOW) {
     // Left iris
     tv.draw_rect(eyeX + 1, eyeY + 1, 1, 2, WHITE);
     tv.draw_rect(eyeX + 1, eyeY + 2, 1, 2, BLACK);
@@ -339,8 +369,7 @@ void show_debug_info() {
 }
 
 void draw_all_enemies() {
-  for (auto &positions : possible_positions)
-  {
+  for (auto &positions : possible_positions) {
     int enabled = positions[0];
 
     if (enabled == ENEMY_DISABLED)
@@ -377,11 +406,11 @@ void verify_if_has_collided_with_enemy() {
   if (digitalRead(ACTION) != LOW)
     return;
 
-  for (auto &positions : possible_positions)
-  {
+  for (auto &positions : possible_positions) {
     bool disable = positions[0] == ENEMY_DISABLED;
 
-    if (disable) continue;
+    if (disable)
+      continue;
 
     int x = positions[1];
     int y = positions[2];
@@ -389,7 +418,8 @@ void verify_if_has_collided_with_enemy() {
 
     collision_confirm(x, y, id);
 
-    if (colliding) break;
+    if (colliding)
+      break;
   }
 
   if (!colliding)
@@ -398,7 +428,7 @@ void verify_if_has_collided_with_enemy() {
   // if (enemy_id_collided <= 0)
   //   Serial.println("Id invalid!");
 
-  show_sinalization_found = true;
+  show_signalization_found = true;
 
   disable_enemy(enemy_id_collided);
   enemies_found++;
@@ -408,19 +438,17 @@ void verify_if_has_collided_with_enemy() {
 
   bool find_all = found_all_enemies();
 
-  if (find_all)
-  {
+  if (find_all) {
     delay(500);
     current_game_state = WIN;
   }
 }
 
 void collision_confirm(int enemy_x, int enemy_y, int enemy_id) {
-  colliding = (eyeX + EYE_WIDTH >= enemy_x && eyeX <= enemy_x + ENEMY_WIDTH)
-              && (eyeY + EYE_HEIGHT >= enemy_y && eyeY <= enemy_y + ENEMY_HEIGHT);
+  colliding = (eyeX + EYE_WIDTH >= enemy_x && eyeX <= enemy_x + ENEMY_WIDTH) &&
+              (eyeY + EYE_HEIGHT >= enemy_y && eyeY <= enemy_y + ENEMY_HEIGHT);
 
-  if (colliding)
-  {
+  if (colliding) {
     enemy_id_collided = enemy_id;
     return;
   }
@@ -432,20 +460,19 @@ void control_game_time() {
   int seconds = millis() - milli_seconds;
   tv.print(50, 5, timer);
 
-  if (seconds >= one_second)
-  {
+  if (seconds >= one_second) {
     timer -= 1;
     milli_seconds = millis();
   }
 
-  if (timer == 0)
-  {
+  if (timer == 0) {
     current_game_state = LOST;
   }
 }
 
 void scenery() {
-  tv.bitmap((tv.hres() - room_image[0]) - 10, (tv.vres() - room_image[1]) / 2, room_image);
+  tv.bitmap((tv.hres() - room_image[0]) - 10, (tv.vres() - room_image[1]) / 2,
+            room_image);
   tv.delay_frame(250);
   tv.clear_screen();
 }
@@ -462,11 +489,11 @@ void draw_marco_polo_indicators() {
   // show_text(tv, eyeX + 3, eyeY - 6, "?", font4x6);
   tv.bitmap(eyeX - 4, eyeY - 15, marco_icon);
 
-  for (auto &positions : possible_positions)
-  {
+  for (auto &positions : possible_positions) {
     bool disable = positions[0] == ENEMY_DISABLED;
 
-    if (disable) continue;
+    if (disable)
+      continue;
 
     int x = positions[1];
     int y = positions[2];
@@ -482,12 +509,10 @@ void reset_marco_polo() {
 }
 
 void disable_enemy(int enemy_id_to_disable) {
-  for (auto &positions : possible_positions)
-  {
+  for (auto &positions : possible_positions) {
     int id = positions[3];
 
-    if (id == enemy_id_to_disable)
-    {
+    if (id == enemy_id_to_disable) {
       positions[0] = ENEMY_DISABLED;
       break;
     }
@@ -496,10 +521,10 @@ void disable_enemy(int enemy_id_to_disable) {
 
 bool found_all_enemies() {
   int internal_enemies_found_quantity = 0;
-  int quantity_of_enemies = sizeof(possible_positions) / sizeof(possible_positions[0]);
+  int quantity_of_enemies =
+      sizeof(possible_positions) / sizeof(possible_positions[0]);
 
-  for (auto &positions : possible_positions)
-  {
+  for (auto &positions : possible_positions) {
     if (positions[0] == ENEMY_DISABLED)
       internal_enemies_found_quantity++;
   }
@@ -512,8 +537,8 @@ bool found_all_enemies() {
 void reset_game() {
   current_game_state = PLAYING;
 
-  eyeY = maxWidth / 2;
-  eyeX = maxHeight / 2;
+  eyeX = (maxWidth / 2) - 4;
+  eyeY = maxHeight - 20;
 
   reset_marco_polo();
   marco_polo_used = MARCO_POLO_CHANCES;
@@ -527,8 +552,8 @@ void reset_game() {
   enemy_id_collided = 0;
   enemies_found = 0;
 
-  show_sinalization_found = false;
-  sinalization_found_time = 0;
+  show_signalization_found = false;
+  signalization_found_time = 0;
 }
 
 int get_random_x_coordinate() {
@@ -541,11 +566,11 @@ int get_random_y_coordinate() {
   return random(20, maxHeight - 20);
 }
 
+// Gera randomicamente as posições dos inimigos em X e Y
 void generate_enemies_positions() {
   int previous_id = 0;
 
-  for (auto &positions : possible_positions)
-  {
+  for (auto &positions : possible_positions) {
     previous_id++;
 
     positions[0] = ENEMY_ENABLED;
@@ -555,12 +580,12 @@ void generate_enemies_positions() {
   }
 }
 
-void show_sinalization() {
-  sinalization_found_time++;
+void show_signalization() {
+  signalization_found_time++;
 
-  if (sinalization_found_time >= DURATION_TO_SHOW_FOUND_SINALIZATION) {
-    show_sinalization_found = false;
-    sinalization_found_time = 0;
+  if (signalization_found_time >= DURATION_TO_SHOW_FOUND_SIGNALIZATION) {
+    show_signalization_found = false;
+    signalization_found_time = 0;
     return;
   }
 
@@ -568,42 +593,42 @@ void show_sinalization() {
 }
 
 void play_sound(int time_delay, int which_sound) {
-// Serial.println("Chegou no ínicio");
-//   if (which_sound == 10) //found
-//   {
-//     for (int i = 0; i < sizeof(sound_found); i++)
+  // Serial.println("Chegou no ínicio");
+  //   if (which_sound == 10) //found
+  //   {
+  //     for (int i = 0; i < sizeof(sound_found); i++)
 
-//     {
-//       tone(SOUND, sound_found[i]);
-//       delay(time_delay);
-//     }
-//   }
-//   else if (which_sound == 20) //Marco Polo
-//   {
-//     for (int i = 0; i < sizeof(sound_call); i++)
-//     {
-//       tone(SOUND, sound_call[i]);
-//       delay(time_delay);
-//     }
-//   }
-//   else if (which_sound == 30) //Win
-//   {
-//     for (int i = 0; i < sizeof(sound_win); i++)
-//     {
-//       tone(SOUND, sound_win[i]);
-//       delay(time_delay);
-//     }
-//   }
-//   else if (which_sound == 40) //Lose
-//   {
-//     for (int i = 0; i < sizeof(sound_lose); i++)
-//     {
-//       tone(SOUND, sound_lose[i]);
-//       delay(time_delay);
-//     }
+  //     {
+  //       tone(SOUND, sound_found[i]);
+  //       delay(time_delay);
+  //     }
+  //   }
+  //   else if (which_sound == 20) //Marco Polo
+  //   {
+  //     for (int i = 0; i < sizeof(sound_call); i++)
+  //     {
+  //       tone(SOUND, sound_call[i]);
+  //       delay(time_delay);
+  //     }
+  //   }
+  //   else if (which_sound == 30) //Win
+  //   {
+  //     for (int i = 0; i < sizeof(sound_win); i++)
+  //     {
+  //       tone(SOUND, sound_win[i]);
+  //       delay(time_delay);
+  //     }
+  //   }
+  //   else if (which_sound == 40) //Lose
+  //   {
+  //     for (int i = 0; i < sizeof(sound_lose); i++)
+  //     {
+  //       tone(SOUND, sound_lose[i]);
+  //       delay(time_delay);
+  //     }
 
-//   }
+  //   }
 
-//   noTone(SOUND);
-//   Serial.println("Chegou no fim");
+  //   noTone(SOUND);
+  //   Serial.println("Chegou no fim");
 }

@@ -1,35 +1,70 @@
+// Valores contantes utilizados por todo o jogo
+
+// Pino do botão para se movimentar para a direita
 #define RIGHT_MOVEMENT 2
+// Pino do botão para se movimentar para a esquerda
 #define LEFT_MOVEMENT 3
+// Pino do botão para se movimentar para cima
 #define UP_MOVEMENT 4
+// Pino do botão para se movimentar para baixo
 #define DOWN_MOVEMENT 5
+// Pino do botão para realizar o marco polo
 #define ACTION 6
 
+// Altura total da tela
 #define SCREEN_HEIGHT 96
+// Largura total da tela
 #define SCREEN_WIDTH 120
 
+// Altura do olho (player)
 #define EYE_HEIGHT 4
+// Largura do olho (player)
 #define EYE_WIDTH 8
 
+// Altura do inimigo
 #define ENEMY_HEIGHT 16
+// Largura do inimigo
 #define ENEMY_WIDTH 12
+// Valor que indica se um inimigo está desabilitado
 #define ENEMY_DISABLED 0
+// Valor que indica se um inimigo está habilitado
 #define ENEMY_ENABLED 1
 
+// Define por quanto tempo o jogador precisa segurar para ativar o marco polo
 #define TIME_MARCO_POLO 35
+// Quantos marco polo o jogador pode usar
 #define MARCO_POLO_CHANCES 4
+// Por quanto tempo os indicadores de marco polo irão aparecer na tela,
+// caso o jogador mantenha o botão pressionado
 #define MARCO_POLO_SHOWING_TIME 70
 
+// Duração total do jogo em segundos
 #define GAME_DURATION 20
-#define DURATION_TO_SHOW_FOUND_SINALIZATION 50
+// Por quanto tempo o indicador de que o player achou inimigo irá aparecer na tela
+#define DURATION_TO_SHOW_FOUND_SIGNALIZATION 50
 
-enum GAME_STATES { IN_START_SCREEN = 1, PLAYING, LOST, WIN };
+// Todos os estados em que o jogo pode estar
+enum GAME_STATES {
+  // Indica que o jogador está na tela de início
+  IN_START_SCREEN = 1,
+  // Indica que o jogador está jogando
+  PLAYING,
+  // Indica que o jogador perdeu
+  LOST,
+  // Indica que o jogador ganhou
+  WIN
+};
 
+// Espessura da parede direita do quarto quando está apagado
 #define RIGHT_WALL_WIDTH 6
+// Espessura da parede esquerda do quarto quando está apagado
 #define LEFT_WALL_WIDTH 6
+// Altura da parede superior do quarto quando está apagado
 #define UP_WALL_HEIGHT 16
+// Altura da parede inferior do quarto quando está apagado
 #define DOWN_WALL_HEIGHT 6
 
-// SOUNDS
+// Sons
 #define NOTE_B0  31
 #define NOTE_C1  33
 #define NOTE_CS1 35
@@ -123,14 +158,20 @@ enum GAME_STATES { IN_START_SCREEN = 1, PLAYING, LOST, WIN };
 
 #define SOUND 8
 
+// Som que representa que foi encontrado um inimigo
+// Código para ser acessado no jogo: 10
 const int sound_found[] = {
   NOTE_B5, NOTE_C6, NOTE_E6
-};// 10
+};
 
+// Som que representa que o marco polo foi usado
+// Código para ser acessado no jogo: 20
 const int sound_call[] = {
   NOTE_B6, NOTE_E7, NOTE_B6, NOTE_E7, NOTE_B6
-};//20
+};
 
+// Som que representa que o jogador venceu
+// Código para ser acessado no jogo: 30
 const int sound_win[] = {
   NOTE_FS5, NOTE_FS5, NOTE_D5, NOTE_B4, REST, NOTE_B4, REST, NOTE_E5,
   REST, NOTE_E5, REST, NOTE_E5, NOTE_GS5, NOTE_GS5, NOTE_A5, NOTE_B5,
@@ -146,9 +187,11 @@ const int sound_win[] = {
 
   NOTE_A5, NOTE_A5, NOTE_A5, NOTE_E5, REST, NOTE_D5, REST, NOTE_FS5,
   REST, NOTE_FS5, REST, NOTE_FS5, NOTE_E5, NOTE_E5, NOTE_FS5, NOTE_E5
-};//30
+};
 
+// Som que representa que o jogador perdeu
+// Código para ser acessado no jogo: 40
 const int sound_lose[] = {
   NOTE_B4, NOTE_G4, NOTE_D4, NOTE_CS4, NOTE_B4, NOTE_G4, NOTE_CS4,
   NOTE_A4, NOTE_FS4, NOTE_C4, NOTE_B3, NOTE_F4, NOTE_D4, NOTE_B3, NOTE_E4
-};//40
+};
