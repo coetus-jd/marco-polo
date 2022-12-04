@@ -247,6 +247,8 @@ void start_screen() {
   show_text(tv, 10, maxHeight - 20, "BY ASTHA", font4x6);
   show_text(tv, maxWidth - 40, maxHeight - 20, "FATEC AM", font4x6);
 
+  // Delay para o jogador não pressionar os botões muito rápido e acabar nem
+  // vendo a tela de start
   delay(2000);
 
   // Enquanto o jogador não pressionar nenhum botão o jogo não irá prosseguir
@@ -275,7 +277,7 @@ void game_over_screen() {
 
   show_text(tv, 20, 10, you_lose);
   show_text(tv, 40, 35, ":)");
-  show_text(tv, 25, maxHeight - 35, "Press any key", font4x6);
+  show_text(tv, 20, maxHeight - 35, "Press any button", font4x6);
   show_text(tv, 25, maxHeight - 25, "to play again", font4x6);
 
   // Som de derrota
@@ -310,11 +312,14 @@ void win_screen() {
 
   show_text(tv, 20, 10, "You win!");
   show_text(tv, 40, 35, ":(");
-  show_text(tv, 25, maxHeight - 35, "Press any key", font4x6);
+  show_text(tv, 20, maxHeight - 35, "Press any button", font4x6);
   show_text(tv, 25, maxHeight - 25, "to play again", font4x6);
 
   // Som de vitória
   // play_sound(150, 30);
+
+  // Delay para o jogador não pressionar os botões muito rápido e acabar nem
+  // vendo a tela de venceu
   delay(2000);
 
   // Enquanto o jogador não pressionar nenhum botão o jogo não irá prosseguir
@@ -574,7 +579,16 @@ void scenery() {
     (tv.vres() - room_image[1]) / 2,
     room_image
   );
-  tv.delay_frame(250);
+
+  bool pressed = false;
+
+  delay(2000);
+
+  // Enquanto o jogador não pressionar nenhum botão o jogo não irá prosseguir
+  do {
+    pressed = has_pressed_any_button();
+  } while (!pressed);
+
   tv.clear_screen();
 }
 
