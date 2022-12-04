@@ -30,7 +30,9 @@ TVout tv;
 // Variáveis relacionadas ao game no geral
 int current_game_state = 0;
 char game_name[] = "Neutron games";
+// Controla por quanto tempo a sinalização de que o jogador achou um inimigo está sendo exibida
 int signalization_found_time = 0;
+// Indica se deve ou não exibir a sinalização de que o jogador achou um inimigo
 bool show_signalization_found = false;
 
 // Posição em X do player
@@ -66,14 +68,15 @@ int one_second = 333;
 // Guarda o total de tempo jogado
 int milli_seconds = 0;
 
-// Matriz com todas as posições dos inimigos (posições geradas na função generate_enemies_positions())
+// Matriz com todas as posições dos inimigos (posições geradas
+// aleatoriamente posteriormente na função generate_enemies_positions())
 int possible_positions[5][4] = {
-  // Is enabled?    X  Y  Id
-  { ENEMY_DISABLED, 0, 0, 0 },
-  { ENEMY_DISABLED, 0, 0, 0 },
-  { ENEMY_DISABLED, 0, 0, 0 },
-  { ENEMY_DISABLED, 0, 0, 0 },
-  { ENEMY_DISABLED, 0, 0, 0 },
+  // Está habilitado?    X  Y  ID
+  { ENEMY_DISABLED,      0, 0, 0 },
+  { ENEMY_DISABLED,      0, 0, 0 },
+  { ENEMY_DISABLED,      0, 0, 0 },
+  { ENEMY_DISABLED,      0, 0, 0 },
+  { ENEMY_DISABLED,      0, 0, 0 },
 };
 
 // Controles de colisão
@@ -139,8 +142,8 @@ void loop() {
     show_signalization();
   }
 }
-// Configura todos os botões e componentes utilizados no jogo
 
+// Configura todos os botões e componentes utilizados no jogo
 void configure_buttons() {
   pinMode(RIGHT_MOVEMENT, INPUT_PULLUP);
   pinMode(LEFT_MOVEMENT, INPUT_PULLUP);
@@ -171,7 +174,7 @@ void draw_game_delimiters() {
   // Método antigo usando a imagem:
   // tv.bitmap((tv.hres() - dark_scenary[0]) - 10, (tv.vres() - dark_scenary[1]) / 2, dark_scenary);
 
-
+  // Desenha um quadrado branco por volta da tela
   tv.draw_rect(0, 0, maxWidth, maxHeight, WHITE);
 
   // Desenha o quadrado por volta de toda a tela jogável
@@ -234,6 +237,7 @@ void start_screen() {
 
   bool pressed = false;
 
+  // Limpa a tela
   tv.delay_frame(1);
   tv.clear_screen();
 
@@ -250,6 +254,7 @@ void start_screen() {
     pressed = has_pressed_any_button();
   } while (!pressed);
 
+  // Limpa a tela
   tv.delay_frame(1);
   tv.clear_screen();
 
@@ -550,11 +555,13 @@ void control_game_time() {
   int seconds = millis() - milli_seconds;
   tv.print(50, 5, timer);
 
+  // Caso tenha passado o tempo determinado, tiramos 1s do tempo de jogo
   if (seconds >= one_second) {
     timer -= 1;
     milli_seconds = millis();
   }
 
+  // Se o timer chegou a 0 quer dizer que acabou o tempo e o jogador perdeu
   if (timer == 0) {
     current_game_state = LOST;
   }
@@ -575,6 +582,8 @@ void scenery() {
 void marco_polo() {
   // Som do Marco Polo
   // play_sound(150, 20);
+
+  // Marcamos que utilizamos 1 marco polo
   marco_polo_used--;
   showing_marco_polo = true;
   draw_marco_polo_indicators();
@@ -628,6 +637,7 @@ bool found_all_enemies() {
       internal_enemies_found_quantity++;
   }
 
+  // Se o total de inimigos desabilitados é igual ao total de inimigos criados, então achamos todos
   bool found_all = internal_enemies_found_quantity == quantity_of_enemies;
 
   return found_all;
@@ -636,6 +646,8 @@ bool found_all_enemies() {
 // Reseta o jogo por completo, voltando as variáveis ao seu estado original
 void reset_game() {
   current_game_state = PLAYING;
+  show_signalization_found = false;
+  signalization_found_time = 0;
 
   eyeX = (maxWidth / 2) - 4;
   eyeY = maxHeight - 20;
@@ -646,14 +658,11 @@ void reset_game() {
   timer = GAME_DURATION;
   milli_seconds = 0;
 
-  generate_enemies_positions();
-
   colliding = false;
   enemy_id_collided = 0;
   enemies_found = 0;
 
-  show_signalization_found = false;
-  signalization_found_time = 0;
+  generate_enemies_positions();
 }
 
 // Gera uma posição válida em X
@@ -671,6 +680,7 @@ void generate_enemies_positions() {
   int previous_id = 0;
 
   for (auto &positions : possible_positions) {
+    // Gera um id numérico sequencial padrão (1, 2, 3, etc.)
     previous_id++;
 
     positions[0] = ENEMY_ENABLED;
@@ -684,6 +694,7 @@ void generate_enemies_positions() {
 void show_signalization() {
   signalization_found_time++;
 
+  // Se a sinalização já foi exibida pelo tempo definido, devemos remover ela da tela
   if (signalization_found_time >= DURATION_TO_SHOW_FOUND_SIGNALIZATION) {
     show_signalization_found = false;
     signalization_found_time = 0;
