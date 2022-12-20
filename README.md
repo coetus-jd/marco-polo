@@ -35,6 +35,17 @@ This project contains a game developed from the Console Games discipline in [FAT
  2. Create a branch with your feature: ```git checkout -b my-feature```
  3. Commit your changes: ```git commit -m 'feat: My new feature'```
  4. Push your branch: ```git push origin my-feature```
+ 
+## :handshake: Contributors
+ - [Alberto Luigi Venciguerra](https://www.instagram.com/alvenciguerra/) - Graphic Design, Level Design, Adminstration 
+ - Ana Laura - Graphic Design and Level Design 
+ - [Bruno Ganade Alves ](https://github.com/Ganade) - Hardware development
+ - [Fabrício Pinto Ferreira](https://github.com/pferreirafabricio) - Coding and testing
+ - [Gustavo Antônio Mioto](https://github.com/gustavoamioto) - Coding and testing
+ - [Leonardo Rezende Nakashima](https://github.com/waterwhirl) - Coding and testing
+ - Lucas Bocatto - Graphic design
+ - [Mateus Peres](https://github.com/j00ji) - Coding and testing
+ - Matheus Rodrigues Mantovani - Documentation
 
 ## :page_with_curl:	License
 This project is under the GPL-3.0 license. Take a look at the [LICENSE](LICENSE) file for more details.
