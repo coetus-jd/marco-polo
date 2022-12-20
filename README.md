@@ -16,7 +16,11 @@
 
 ## 🎮 Overview game
 
+> **Note**:
 > Play on Wokwi: https://wokwi.com/projects/346622230205039186
+
+> **Note**:
+> The Wokwi simulator has some performance issues so the game may look broken or the image is low quality, but on real hardware it works fine!
 
 <table>
   <tr>
