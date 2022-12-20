@@ -39,11 +39,12 @@ This project contains a game developed from the Console Games discipline in [FAT
 ## :handshake: Contributors
  - [Alberto Luigi Venciguerra](https://www.instagram.com/alvenciguerra/) - Graphic Design, Level Design, Adminstration 
  - Ana Laura - Graphic Design and Level Design 
- - [Bruno Ganade Alves ](https://github.com/Ganade) - Hardware development
+ - [Bruno Ganade Alves ](https://github.com/Ganade) - Hardware
+ - Bruno Miguel Degasperi Serra - Graphic Design and Level Design 
  - [Fabrício Pinto Ferreira](https://github.com/pferreirafabricio) - Coding and testing
  - [Gustavo Antônio Mioto](https://github.com/gustavoamioto) - Coding and testing
  - [Leonardo Rezende Nakashima](https://github.com/waterwhirl) - Coding and testing
- - Lucas Bocatto - Graphic design
+ - Lucas Bocatto - Graphic design and Level Design
  - [Mateus Peres](https://github.com/j00ji) - Coding and testing
  - Matheus Rodrigues Mantovani - Documentation
 
