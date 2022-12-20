@@ -14,9 +14,51 @@
 </p>
 <br>
 
-## :eyes: Overview
+## 🎮 Overview game
 
 > Play on Wokwi: https://wokwi.com/projects/346622230205039186
+
+<table>
+  <tr>
+    <td>
+      <img src="./Docs/start-screen.png" width="484px" />
+    </td>
+    <td>
+     <img src="./Docs/playing.png" />
+    </td>
+    <td>
+      <img src="./Docs/you-lost.png" width="484px" />
+    </td>
+  </tr>
+</table>
+
+
+## 💾 Overview hardware
+
+<table>
+  <tr>
+    <td>
+      <img src="./Docs/eletric-system.png" />
+    </td>
+    <td>
+      <img src="./Docs/console-0.jpg" />
+    </td>
+    <td>
+      <img src="./Docs/console-1.jpg" />
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <img src="./Docs/console-2.jpg" />
+    </td>
+    <td>
+      <img src="./Docs/console-3.jpg" />
+    </td>
+    <td>
+      <img src="./Docs/console-game-working.jpg" />
+    </td>
+  </tr>
+</table>
 
 ## :open_book: About 
 This project contains a game developed from the Console Games discipline in [FATEC Americana](https://www.fatec.edu.br/). In the game the player has to try find the other people in the room.
