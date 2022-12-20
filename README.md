@@ -1,7 +1,8 @@
 <h1 align="right">
-  <img src="./Arts/LogoMarcoPolo.png" align="left" />
+  <img src="./Arts/LogoFinal.png" width="200px" align="left" />
   Marco Polo
 </h1>
+
 
 <p align="right">
   Game developed for the discipline of Console Games
