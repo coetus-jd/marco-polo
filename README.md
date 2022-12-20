@@ -103,3 +103,8 @@ This project is under the GPL-3.0 license. Take a look at the [LICENSE](LICENSE)
   * https://www.arduino.cc/en/software
   * https://www.npmjs.com/package/clang-format
   * https://www.mischianti.org/images-to-byte-array-online-converter-cpp-arduino/
+
+<br/>
+<p align="center">
+ <img src="./Arts/LogoMarcoPolo.png" align="center" />
+</p>
