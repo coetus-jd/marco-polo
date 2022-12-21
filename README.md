@@ -65,7 +65,16 @@
 </table>
 
 ## :open_book: About 
-This project contains a game developed from the Console Games discipline in [FATEC Americana](https://www.fatec.edu.br/). In the game the player has to try find the other people in the room.
+The game's central idea is a children's game called "marco polo", where the player needs to find
+your friends in the dark.
+
+When the lights are turned off in the game, friends go to random places inside their own room, the only visible thing is the character's eyes.
+
+When the character finds a friend, that friend's eyes appear. If it is difficult to find other friends, the player can press the action button (in Wokwi it is the red button, in the real console it is the purple button) and the positions of the other friends will be revealed, for a short period of time, where the character main says "Marco" and the friends "Polo".
+
+The ultimate goal of the game is to find all the kids before time runs out (the timer is in the top center of the game).
+
+This project contains a game developed from the Console Games discipline in [FATEC Americana](https://www.fatec.edu.br/).
 
 ## :bricks: This project was built with: 
 - [Arduino Uno](https://www.arduino.cc/)
